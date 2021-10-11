@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"
+        type="text/javascript"></script>
+
+    <script>
+        // Create a client instance (set to IP address of HA MQTT server)
+        hostname = "192.168.1.219"
+
+        // The default WebSocket MQTT port in HA is 1884 
+        port = "1884"
+
+
+        client = new Paho.MQTT.Client(hostname, Number(port), "clientId");
+
+        // set callback handlers
+        client.onConnectionLost = onConnectionLost;
+        client.onMessageArrived = onMessageArrived;
+
+        // connect the client
+        client.connect({ onSuccess: onConnect });
+
+
+        function onConnect() {
+            console.log("Connected to Server");
+
+            //Define topics to subscribe to 
+            client.subscribe("media/control");
+        }
+
+        // called when the client loses its connection
+        function onConnectionLost(responseObject) {
+            if (responseObject.errorCode !== 0) {
+                console.log("Connection Lost:" + responseObject.errorMessage);
+            }
+        }
+
+        // called when a message arrives
+        function onMessageArrived(message) {
+            var messageValue = message.payloadString;
+            console.log("Message:" + messageValue);
+
+            var vid = document.getElementById("videoPlayer");
+
+            // Decode Message
+            if (messageValue == "start") {
+                vid.play();
+            }
+
+            else if (messageValue == "stop") {
+                vid.pause();
+            }
+
+            else {
+                console.log("Command Unknown")
+            }
+        }
+    </script>
+</head>
+
+
+<body>
+    <video id="videoPlayer" width="100%">
+        <source src="video.mp4" type="video/mp4">
+    </video>
+</body>
+
+</html>
